@@ -197,12 +197,19 @@ function watchStatus() {
         const st = snap.val();
 
         if (st === "playing") {
-            document.getElementById("playSection").scrollIntoView({ behavior: "smooth" });
+            setTimeout(() => {
+                const play = document.getElementById("playSection");
+                if (play) play.scrollIntoView({ behavior: "smooth" });
+            }, 50);
         }
 
         if (st === "waiting") {
-            document.getElementById("waitSection").scrollIntoView({ behavior: "smooth" });
+            setTimeout(() => {
+                const wait = document.getElementById("waitSection");
+                if (wait) wait.scrollIntoView({ behavior: "smooth" });
+            }, 50);
         }
+
     });
 }
 
@@ -216,3 +223,4 @@ document.getElementById("copyRoomIdBtn").onclick = () => {
         .then(() => alert("コピーしました: " + roomId))
         .catch(() => alert("コピーできませんでした"));
 };
+
