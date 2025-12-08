@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>雀富豪 - CPU対戦</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <h1>雀富豪 - CPU対戦</h1>
+    <button onclick="location.href='index.html'">← ホームに戻る</button>
+
+    <!-- あなたの手牌 -->
+    <div class="area">
+        <h2>あなたの手牌</h2>
+        <div id="hand"></div>
+    </div>
+
+    <!-- 場 -->
+    <div class="area">
+        <h2>場（最後に出されたセット）</h2>
+        <div id="field"></div>
+        <div id="fieldPopup" class="popup"></div>
+    </div>
+
+    <!-- CPUの手牌数 -->
+    <div id="cpuCount" class="area"></div>
+
+    <!-- 操作ボタン -->
+    <div id="controls" class="area">
+        <button id="playBtn">出す</button>
+        <button id="passBtn">パス</button>
+        <button id="takeBtn">倒す</button>
+    </div>
+
+    <!-- CPU戦ロジック -->
+    <script src="cpu.js"></script>
+
+</body>
+</html>
