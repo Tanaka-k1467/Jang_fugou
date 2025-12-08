@@ -1,7 +1,4 @@
-/************************************************************
- * online.js  — ルーム管理・待機画面処理
- ************************************************************/
-
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
 import {
     getDatabase,
     ref,
@@ -12,54 +9,60 @@ import {
     remove
 } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 
+/****************************************************
+ * Firebase 初期設定
+ ****************************************************/
+const firebaseConfig = {
+    apiKey: "AIzaSyCiC3YczfiCXajLy8swS9RtShw5BpBKQwQ",
+    authDomain: "jang-fugou.firebaseapp.com",
+    projectId: "jang-fugou",
+    storageBucket: "jang-fugou.firebasestorage.app",
+    messagingSenderId: "1083704368390",
+    appId: "1:1083704368390:web:f6b6aa0b42508182f41287",
+    measurementId: "G-WTYGK3TB63",
+    databaseURL: "https://jang-fugou-default-rtdb.firebaseio.com"
+};
+
+initializeApp(firebaseConfig);
 const db = getDatabase();
 
-export let myId = "p_" + Math.floor(Math.random() * 1000000000);
+/****************************************************
+ * プレイヤー情報
+ ****************************************************/
+export let myId = "p_" + Math.floor(Math.random() * 10000000);
 export let myName = "名無し";
 let roomId = null;
 let isHost = false;
 
-
-/************************************************************
- * DOM 要素
- ************************************************************/
-const lobbySection = document.getElementById("lobbySection");
-const playSection  = document.getElementById("playSection");
-
-playSection.style.display = "none"; // 初期は非表示
-
-
-/************************************************************
+/****************************************************
  * 名前設定
- ************************************************************/
+ ****************************************************/
 document.getElementById("setNameBtn").onclick = () => {
     const name = document.getElementById("playerNameInput").value.trim();
     if (!name) return alert("名前を入力してください");
 
     myName = name;
 
-    if (roomId) {
-        update(ref(db, `rooms/${roomId}/players/${myId}`), { name });
-    }
+    if (roomId)
+        update(ref(db, `rooms/${roomId}/players/${myId}`), { name: myName });
 
-    alert("名前を設定しました：" + myName);
+    alert(`名前を「${myName}」に設定しました`);
 };
 
-
-/************************************************************
- * ランダム4桁ルームID
- ************************************************************/
+/****************************************************
+ * 4桁ルームID生成
+ ****************************************************/
 function generateRoomId() {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    return Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    return Array.from({ length: 4 }, () =>
+        chars[Math.floor(Math.random() * chars.length)]
+    ).join("");
 }
 
-
-/************************************************************
- * ルーム作成
- ************************************************************/
+/****************************************************
+ * ホスト：ルーム作成
+ ****************************************************/
 document.getElementById("createRoomBtn").onclick = async () => {
-
     roomId = generateRoomId();
     isHost = true;
 
@@ -72,156 +75,144 @@ document.getElementById("createRoomBtn").onclick = async () => {
         turn: null
     });
 
+    // 🔥 先に通知（joinRoom の alert と順番を逆転しないため）
+    alert("ルームを作成しました！ ID：" + roomId);
+
     await joinRoom(roomId);
 };
 
-
-/************************************************************
+/****************************************************
  * ルーム参加
- ************************************************************/
-document.getElementById("joinRoomBtn").onclick = () => {
-    const id = document.getElementById("joinRoomId").value.trim();
-    if (!id) return alert("ルームIDを入力してください");
-
-    joinRoom(id);
-};
-
+ ****************************************************/
 async function joinRoom(id) {
-    roomId = id;
+    roomId = id.trim();
+    if (!roomId) return alert("ルームIDを入力してください");
 
-    // プレイヤー登録
     await update(ref(db, `rooms/${roomId}/players/${myId}`), {
         name: myName,
         hand: []
     });
 
-    alert("ルームに参加しました");
+    document.getElementById("roomIdText").textContent = "ルームID: " + roomId;
+    document.getElementById("copyRoomIdBtn").style.display = "inline-block";
 
     watchPlayers();
     watchStatus();
+    watchDisconnect();
 
-    // ルームID表示
-    document.getElementById("roomIdText").textContent = "ルームID：" + roomId;
-    document.getElementById("copyRoomIdBtn").style.display = "inline-block";
+    // ★ joinRoom 内では alert を出さない！
 }
 
+document.getElementById("joinRoomBtn").onclick = () => {
+    const id = document.getElementById("joinRoomId").value.trim();
+    if (!id) return alert("ルームIDを入力してください");
 
-/************************************************************
- * プレイヤー一覧監視
- ************************************************************/
+    joinRoom(id).then(() => {
+        alert("ルームに参加しました！");
+    });
+};
+
+/****************************************************
+ * プレイヤー一覧表示
+ ****************************************************/
 function watchPlayers() {
     onValue(ref(db, `rooms/${roomId}/players`), snap => {
-        const list = snap.val() || {};
-        const box = document.getElementById("playerList");
+        const players = snap.val() || {};
+        const area = document.getElementById("playerList");
+        area.innerHTML = "<h3>参加プレイヤー：</h3>";
 
-        box.innerHTML = "<h3>参加プレイヤー</h3>";
-
-        for (const pid in list) {
+        for (const pid in players) {
+            const name = players[pid].name ?? "名無し";
             const div = document.createElement("div");
-            div.textContent = list[pid].name + (pid === myId ? "（あなた）" : "");
-            box.appendChild(div);
+            div.textContent = `${name} ${pid === myId ? "(あなた)" : ""}`;
+            area.appendChild(div);
+        }
+
+        // ★ 対戦中の途中退出 → 残った方が勝ち
+        handleUnexpectedLeave(players);
+    });
+}
+
+/****************************************************
+ * 途中退出検知（対戦中のみ発動）
+ ****************************************************/
+function handleUnexpectedLeave(players) {
+    if (!players[myId]) {
+        alert("ルームから追放されました");
+        location.reload();
+        return;
+    }
+
+    if (!isHost) return; // 判定はホストだけが行う
+
+    // 対戦中でプレイヤーが1人になった
+    get(ref(db, `rooms/${roomId}/status`)).then(s => {
+        if (s.val() !== "playing") return;
+
+        if (Object.keys(players).length === 1) {
+            update(ref(db, `rooms/${roomId}`), { status: "finished" });
+            alert("相手が離脱しました。あなたの勝ちです！");
         }
     });
 }
 
+/****************************************************
+ * Firebase onDisconnect（抜けたら自動削除）
+ ****************************************************/
+function watchDisconnect() {
+    const playerRef = ref(db, `rooms/${roomId}/players/${myId}`);
+    import("https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js")
+        .then(({ onDisconnect }) => {
+            onDisconnect(playerRef).remove();
+        });
+}
 
-/************************************************************
- * ゲーム開始（ホスト）
- ************************************************************/
+/****************************************************
+ * ゲーム開始（ホストのみ）
+ ****************************************************/
 document.getElementById("startGameBtn").onclick = async () => {
     if (!isHost) return alert("ホストのみ開始できます");
 
     const snap = await get(ref(db, `rooms/${roomId}/players`));
     const players = snap.val() || {};
-    const ids = Object.keys(players);
+    const pids = Object.keys(players);
 
-    if (ids.length !== 2) return alert("今は2人対戦のみです");
+    if (pids.length !== 2) return alert("今は2人専用です");
 
-    const shuffled = [...ids].sort(() => Math.random() - 0.5);
+    const shuffled = [...pids].sort(() => Math.random() - 0.5);
+    const first = shuffled[0];
 
     await update(ref(db, `rooms/${roomId}`), {
         status: "playing",
         turnOrder: { 0: shuffled[0], 1: shuffled[1] },
-        turn: shuffled[0]
+        turn: first
     });
 };
 
-
-/************************************************************
- * ★ 状態変化監視（playing → 対戦画面へ、自動スクロール）
- ************************************************************/
+/****************************************************
+ * ゲーム開始したらプレイ画面へスクロール
+ ****************************************************/
 function watchStatus() {
     onValue(ref(db, `rooms/${roomId}/status`), snap => {
-        const status = snap.val();
+        const st = snap.val();
 
-        if (status === "playing") {
-            lobbySection.style.display = "none";
-            playSection.style.display = "block";
-
-            // スクロール
-            playSection.scrollIntoView({ behavior: "smooth" });
-
-            // 対戦ロジック側を起動
-            if (window.onlineGameInit) {
-                window.onlineGameInit(myId, roomId, myName);
-            }
+        if (st === "playing") {
+            document.getElementById("playSection").scrollIntoView({ behavior: "smooth" });
         }
 
-        if (status === "finished") {
-            showResultPopup();
+        if (st === "waiting") {
+            document.getElementById("waitSection").scrollIntoView({ behavior: "smooth" });
         }
     });
 }
 
-
-/************************************************************
- * ★ 結果ポップアップ表示
- ************************************************************/
-function showResultPopup() {
-    const popup = document.getElementById("resultPopup");
-    const text  = document.getElementById("resultText");
-
-    get(ref(db, `rooms/${roomId}/winner`)).then(snap => {
-        text.textContent = `勝者：${snap.val()}`;
-        popup.style.display = "block";
-    });
-}
-
-
-/************************************************************
- * ルームを解散する
- ************************************************************/
-document.getElementById("closeRoomBtn").onclick = async () => {
+/****************************************************
+ * ルームIDコピー
+ ****************************************************/
+document.getElementById("copyRoomIdBtn").onclick = () => {
     if (!roomId) return;
 
-    await remove(ref(db, `rooms/${roomId}`));
-    alert("ルームを解散しました");
-    location.href = "index.html";
+    navigator.clipboard.writeText(roomId)
+        .then(() => alert("コピーしました: " + roomId))
+        .catch(() => alert("コピーできませんでした"));
 };
-
-
-/************************************************************
- * もう一度遊ぶ
- ************************************************************/
-document.getElementById("restartBtn").onclick = async () => {
-    if (!isHost) return alert("ホストのみ操作できます");
-
-    await update(ref(db, `rooms/${roomId}`), {
-        status: "waiting",
-        field: [],
-        fieldStack: [],
-        turn: null
-    });
-
-    location.reload();
-};
-
-
-/************************************************************
- * タブを閉じたときにルームから消える
- ************************************************************/
-window.addEventListener("beforeunload", () => {
-    if (roomId && myId) {
-        remove(ref(db, `rooms/${roomId}/players/${myId}`));
-    }
-});
