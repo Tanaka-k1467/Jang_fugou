@@ -8,42 +8,39 @@
 
 <body>
 
-<div class="center-wrapper">
-
 <h1>雀富豪 - オンライン対戦</h1>
-<button class="menuBtn" onclick="location.href='index.html'">← ホームへ戻る</button>
-
+<button id="backHomeBtn">← ホームへ戻る</button>
 
 <!-- ======================================================
-     ① 待機画面（ロビー）
+     待機画面
 ====================================================== -->
-<div id="lobbySection" class="area">
+<div id="lobbySection" class="section">
 
     <h2>待機画面</h2>
 
     <!-- 名前設定 -->
-    <div style="margin-bottom:10px;">
-        <input id="playerNameInput" type="text" placeholder="名前を入力">
-        <button id="setNameBtn" class="smallBtn">名前設定</button>
+    <div>
+        <input id="playerNameInput" placeholder="名前を入力">
+        <button id="setNameBtn">名前設定</button>
     </div>
 
     <!-- ルーム作成 -->
     <button id="createRoomBtn">ルームを作る</button>
 
     <!-- ルーム参加 -->
-    <div style="margin-top:10px;">
-        <input id="joinRoomId" type="text" placeholder="ルームIDを入力">
-        <button id="joinRoomBtn" class="smallBtn">参加</button>
+    <div style="margin-top: 10px;">
+        <input id="joinRoomId" placeholder="ルームIDを入力">
+        <button id="joinRoomBtn">参加</button>
     </div>
 
     <!-- ルームID表示 -->
     <div id="roomDisplay" style="margin-top:10px;">
         <span id="roomIdText"></span>
-        <button id="copyRoomIdBtn" class="smallBtn" style="display:none;">コピー</button>
+        <button id="copyRoomIdBtn" style="display:none;">コピー</button>
     </div>
 
     <!-- ゲーム開始（ホストのみ） -->
-    <button id="startGameBtn" style="display:none; margin-top:10px;">ゲーム開始</button>
+    <button id="startGameBtn" style="display:none;">ゲーム開始</button>
 
     <!-- プレイヤー一覧 -->
     <div id="playerList" class="area"></div>
@@ -53,11 +50,10 @@
 
 
 <!-- ======================================================
-     ② 対戦画面
+     対戦画面
 ====================================================== -->
-<div id="playSection" class="area" style="margin-top:80px; display:none;">
+<div id="playSection" class="section">
 
-    <!-- ターン表示（右上固定） -->
     <div id="right-panel">
         <h2>ターン情報</h2>
         <div id="turnDisplay">現在のターン：ー<br>次：ー</div>
@@ -65,7 +61,7 @@
 
     <h2>対戦画面</h2>
 
-    <!-- あなたの手札 -->
+    <!-- 手札 -->
     <div class="area">
         <h3>あなたの手牌</h3>
         <div id="hand"></div>
@@ -75,22 +71,20 @@
     <div class="area">
         <h3>場（最後のセット）</h3>
         <div id="field"></div>
-        <div id="fieldPopup" class="popup"></div>
     </div>
 
     <!-- 操作ボタン -->
     <div class="area">
-        <button onclick="playOnline()">出す</button>
-        <button onclick="passOnline()">パス</button>
-        <button onclick="takeOnline()">倒す</button>
+        <button id="playBtn">出す</button>
+        <button id="passBtn">パス</button>
+        <button id="takeBtn">倒す</button>
     </div>
-
 </div>
 
 
 
 <!-- ======================================================
-     ③ 結果ポップアップ
+     結果ポップアップ
 ====================================================== -->
 <div id="resultBg"></div>
 <div id="resultPopup">
@@ -102,11 +96,9 @@
 
 
 <!-- ======================================================
-     🔥 online.js（待機＋対戦ロジックの全て）を通常スクリプトで読み込む
-     ※ これがボタン反応しなかった原因の解決ポイント
+     Firebase & オンラインロジック
 ====================================================== -->
-<script src="online.js" defer></script>
+<script type="module" src="online.js"></script>
 
-</div>
 </body>
 </html>
