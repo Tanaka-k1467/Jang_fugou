@@ -8,21 +8,23 @@
 
 <body>
 
+<div class="center-wrapper">
+
 <h1>雀富豪 - オンライン対戦</h1>
-<button onclick="location.href='index.html'">← ホームへ戻る</button>
+<button class="menuBtn" onclick="location.href='index.html'">← ホームへ戻る</button>
 
 
 <!-- ======================================================
-     ① 待機画面
+     ① 待機画面（ロビー）
 ====================================================== -->
-<div id="lobbySection" class="section">
+<div id="lobbySection" class="area">
 
     <h2>待機画面</h2>
 
     <!-- 名前設定 -->
     <div style="margin-bottom:10px;">
-        <input id="playerNameInput" placeholder="名前を入力">
-        <button id="setNameBtn">名前設定</button>
+        <input id="playerNameInput" type="text" placeholder="名前を入力">
+        <button id="setNameBtn" class="smallBtn">名前設定</button>
     </div>
 
     <!-- ルーム作成 -->
@@ -30,14 +32,14 @@
 
     <!-- ルーム参加 -->
     <div style="margin-top:10px;">
-        <input id="joinRoomId" placeholder="ルームIDを入力">
-        <button id="joinRoomBtn">参加</button>
+        <input id="joinRoomId" type="text" placeholder="ルームIDを入力">
+        <button id="joinRoomBtn" class="smallBtn">参加</button>
     </div>
 
     <!-- ルームID表示 -->
     <div id="roomDisplay" style="margin-top:10px;">
         <span id="roomIdText"></span>
-        <button id="copyRoomIdBtn" style="display:none;">コピー</button>
+        <button id="copyRoomIdBtn" class="smallBtn" style="display:none;">コピー</button>
     </div>
 
     <!-- ゲーム開始（ホストのみ） -->
@@ -53,9 +55,9 @@
 <!-- ======================================================
      ② 対戦画面
 ====================================================== -->
-<div id="playSection" class="section">
+<div id="playSection" class="area" style="margin-top:80px;">
 
-    <!-- ターン表示 -->
+    <!-- ターン表示（右上固定） -->
     <div id="right-panel">
         <h2>ターン情報</h2>
         <div id="turnDisplay">現在のターン：ー<br>次：ー</div>
@@ -73,6 +75,7 @@
     <div class="area">
         <h3>場（最後のセット）</h3>
         <div id="field"></div>
+        <div id="fieldPopup" class="popup"></div>
     </div>
 
     <!-- 操作ボタン -->
@@ -81,6 +84,7 @@
         <button onclick="passOnline()">パス</button>
         <button onclick="takeOnline()">倒す</button>
     </div>
+
 </div>
 
 
@@ -88,8 +92,9 @@
 <!-- ======================================================
      ③ 結果ポップアップ
 ====================================================== -->
-<div id="resultPopup" class="popupWindow">
-    <div id="resultText"></div>
+<div id="resultBg"></div>
+<div id="resultPopup">
+    <h2 id="resultText"></h2>
     <button id="restartBtn">もう一度遊ぶ</button>
     <button id="closeRoomBtn">ルームを解散する</button>
 </div>
@@ -97,31 +102,10 @@
 
 
 <!-- ======================================================
-     Firebase 初期化
-====================================================== -->
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyCiC3YczfiCXajLy8swS9RtShw5BpBKQwQ",
-        authDomain: "jang-fugou.firebaseapp.com",
-        projectId: "jang-fugou",
-        storageBucket: "jang-fugou.firebasestorage.app",
-        messagingSenderId: "1083704368390",
-        appId: "1:1083704368390:web:f6b6aa0b42508182f41287",
-        measurementId: "G-WTYGK3TB63",
-        databaseURL: "https://jang-fugou-default-rtdb.firebaseio.com"
-    };
-
-    initializeApp(firebaseConfig);
-</script>
-
-
-<!-- ======================================================
-     オンライン待機ロジック / 対戦ロジック
+     online.js（待機 + 対戦ロジック統合）
 ====================================================== -->
 <script type="module" src="online.js"></script>
-<script type="module" src="onlinemain.js"></script>
 
+</div>
 </body>
 </html>
