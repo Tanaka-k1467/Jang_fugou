@@ -306,8 +306,10 @@ function take() {
     renderHand();
     updateField();
     
-    // 直近で牌を出したプレイヤーにターンを渡す
-    turn = lastPlayer === "player" ? "cpu" : "player";
+    // 倒したプレイヤーの次のプレイヤーにターンを渡す
+    // プレイヤーが倒す → CPUにターン
+    // CPUが倒す → プレイヤーにターン
+    turn = turn === "player" ? "cpu" : "player";
     
     if (turn === "cpu") {
         setTimeout(cpuTurn, 500);
