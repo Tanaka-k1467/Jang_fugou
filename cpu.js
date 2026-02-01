@@ -308,7 +308,6 @@ function take() {
     
     // 倒したプレイヤーの次のプレイヤーにターンを渡す
     // プレイヤーが倒す → CPUにターン
-    // CPUが倒す → プレイヤーにターン
     turn = turn === "player" ? "cpu" : "player";
     
     if (turn === "cpu") {
@@ -330,6 +329,10 @@ function groupByValue(arr) {
 }
 
 function cpuTurn() {
+    console.log("=== cpuTurn開始 ===");
+    console.log("turn:", turn);
+    console.log("field.length:", field.length);
+    console.log("cpuHand:", cpuHand);
 
     let groups = groupByValue(cpuHand);
 
@@ -339,10 +342,11 @@ function cpuTurn() {
     let playSet = null;
 
     if (field.length === 0) {
+        // 場がクリアされている場合、最も弱い牌を出す
         playSet = groups[0];
     } else {
+        // 場に牌がある場合、同じ枚数で強い牌を探す
         const need = field.length;
-
         for (const g of groups) {
             if (g.length === need && isStronger(g[0], field[0])) {
                 playSet = g;
@@ -352,6 +356,7 @@ function cpuTurn() {
     }
 
     if (!playSet) {
+        console.log("CPUがパス");
         field = [];
         lockedCount = 0;
         fieldStack = [];
@@ -366,6 +371,7 @@ function cpuTurn() {
     const nan = checkNanmen(playSet);
     const eightCut = checkEightCut(playSet);
 
+    console.log("CPUが牌を出す:", playSet);
     field = playSet;
     lockedCount = playSet.length;
     lastPlayer = "cpu";  // CPUが牌を出した
@@ -398,6 +404,8 @@ function cpuTurn() {
         return;
     }
 
+    // CPUが牌を出した後、プレイヤーのターンに戻す
+    // ただし、プレイヤーが「倒す」をできるようにする
     turn = "player";
 }
 
