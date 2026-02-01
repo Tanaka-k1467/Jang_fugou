@@ -50,6 +50,39 @@ const playSection = document.getElementById("playSection");
 
 playSection.style.display = "none";
 
+
+/* ============================================================
+   デッキ管理
+============================================================ */
+function createDeck() {
+    const d = [];
+    for (let i = 1; i <= 9; i++)
+        for (let j = 0; j < 4; j++) d.push(i);
+    for (let i = 10; i <= 13; i++)
+        for (let j = 0; j < 4; j++) d.push(i);
+    d.push(99, 99);
+    return d;
+}
+
+function shuffle(a) {
+    for (let i = a.length - 1; i > 0; i--) {
+        const r = Math.floor(Math.random() * (i + 1));
+        [a[i], a[r]] = [a[r], a[i]];
+    }
+    return a;
+}
+
+function strengthBase(v) {
+    if (v === 99) return 14;
+    if (v === 2) return 13;
+    if (v === 1) return 12;
+    if (v === 13) return 11;
+    if (v === 12) return 10;
+    if (v === 11) return 9;
+    if (v === 10) return 8;
+    return v - 2;
+}
+
 /* ============================================================
    UI 基本関数
 ============================================================ */
@@ -399,7 +432,16 @@ document.getElementById("startGameBtn").onclick = async () => {
 
     if (ids.length !== 2) return alert("今は2人専用です");
 
+    // 手牌配布
+    const deck = shuffle(createDeck());
+    const hand1 = deck.slice(0, 27).sort((a, b) => strengthBase(a) - strengthBase(b));
+    const hand2 = deck.slice(27).sort((a, b) => strengthBase(a) - strengthBase(b));
+
     const shuffled = [...ids].sort(() => Math.random() - 0.5);
+
+    // プレイヤーに手牌を配布
+    await update(ref(db, `rooms/${roomId}/players/${shuffled[0]}`), { hand: hand1 });
+    await update(ref(db, `rooms/${roomId}/players/${shuffled[1]}`), { hand: hand2 });
 
     await update(ref(db, `rooms/${roomId}`), {
         status: "playing",
