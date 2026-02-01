@@ -17,6 +17,7 @@ let fieldStack = [];
 
 let turn = "player";
 let lockedCount = 0;
+let lastPlayer = null;  // 直近で牌を出したプレイヤー（"player" or "cpu"）
 
 // 状態フラグ
 let isReversed = false;   // 革命（永続）
@@ -216,6 +217,7 @@ function play() {
 
     field = cards;
     lockedCount = cards.length;
+    lastPlayer = "player";  // プレイヤーが牌を出した
 
     fieldStack.push(cards.slice());
 
@@ -293,6 +295,8 @@ function take() {
     }
 
     hand = hand.concat(field);
+    // 手牌を強さでソート（上位に強い牌を並べる）
+    hand.sort((a, b) => strengthBase(a) - strengthBase(b));
 
     field = [];
     lockedCount = 0;
@@ -302,8 +306,12 @@ function take() {
     renderHand();
     updateField();
     
-    turn = "cpu";
-    setTimeout(cpuTurn, 500);
+    // 直近で牌を出したプレイヤーにターンを渡す
+    turn = lastPlayer === "player" ? "cpu" : "player";
+    
+    if (turn === "cpu") {
+        setTimeout(cpuTurn, 500);
+    }
 }
 
 
@@ -358,6 +366,7 @@ function cpuTurn() {
 
     field = playSet;
     lockedCount = playSet.length;
+    lastPlayer = "cpu";  // CPUが牌を出した
 
     fieldStack.push(playSet.slice());
 
