@@ -321,8 +321,8 @@ function watchPlayers() {
             area.appendChild(div);
         }
 
-        // 対戦中に他方が抜けたら勝利
-        if (roomId && Object.keys(players).length === 1) {
+        // 対戦中に他方が抜けたら勝利（ゲーム開始後のみ）
+        if (roomId && Object.keys(players).length === 1 && playSection.style.display !== "none") {
             showResult(`${myName} の勝利！（相手が退出）`);
         }
     });
