@@ -53,6 +53,17 @@ playSection.style.display = "none";
 /* ============================================================
    UI 基本関数
 ============================================================ */
+function cardText(v) {
+    if (v === 99 || v === "赤") return "赤";
+    if (v === 2 || v === "2") return "2";
+    if (v === 1 || v === "1") return "1";
+    if (v === 13 || v === "北") return "北";
+    if (v === 12 || v === "西") return "西";
+    if (v === 11 || v === "南") return "南";
+    if (v === 10 || v === "東") return "東";
+    return String(v);
+}
+
 function renderHand() {
     const area = document.getElementById("hand");
     area.innerHTML = "";
@@ -60,7 +71,7 @@ function renderHand() {
     hand.forEach((v, i) => {
         const el = document.createElement("div");
         el.className = "card";
-        el.textContent = v;
+        el.textContent = cardText(v);
 
         if (selected.includes(i)) el.classList.add("selected");
 
@@ -82,7 +93,7 @@ function renderField() {
     field.forEach(v => {
         const el = document.createElement("div");
         el.className = "card";
-        el.textContent = v;
+        el.textContent = "(" + cardText(v) + ")";
         area.appendChild(el);
     });
 }
@@ -213,7 +224,23 @@ async function pushPass() {
     moveTurn();
 }
 
+function canTake() {
+    if (field.length === 0) return false;
+    if (fieldStack.length === 0) return false;
+    
+    const fieldStages = fieldStack.length;
+    const requiredStages = lockedCount + 1;
+    
+    return fieldStages >= requiredStages;
+}
+
 async function pushTake() {
+    if (!canTake()) {
+        const fieldStages = fieldStack.length;
+        const requiredStages = lockedCount + 1;
+        return alert(`倒すには場に${requiredStages}段以上の牌が必要です（現在：${fieldStages}段）`);
+    }
+    
     const newHand = [...hand, ...field];
 
     await update(ref(db, `rooms/${roomId}/players/${myId}`), { hand: newHand });
@@ -224,6 +251,8 @@ async function pushTake() {
         lockedCount: 0,
         nanmenActive: false
     });
+    
+    await moveTurn(myId);
 }
 
 /* ============================================================
@@ -246,6 +275,20 @@ function listenGameState() {
 
         renderHand();
         renderField();
+        
+        // ゲーム終了判定
+        const players = data.players || {};
+        for (const pid in players) {
+            if (pid !== myId && (!players[pid].hand || players[pid].hand.length === 0)) {
+                showResult(`相手が上がりました。あなたの敗北です。`);
+                return;
+            }
+        }
+        
+        if (hand.length === 0) {
+            showResult(`あなたが上がりました。勝利です！`);
+            return;
+        }
 
         if (data.status === "playing") scrollToPlay();
     });

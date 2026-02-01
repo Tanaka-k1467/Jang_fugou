@@ -242,6 +242,7 @@ function play() {
 
     if (hand.length === 0) {
         alert("あなたの勝ち！");
+        setTimeout(() => location.reload(), 1000);
         return;
     }
 
@@ -271,9 +272,25 @@ function pass() {
 /****************************************************
  * 倒す（場全部取る）
  ****************************************************/
+function canTake() {
+    if (field.length === 0) return false;
+    if (fieldStack.length === 0) return false;
+    
+    // 倒すための条件：場の段数 >= 出された枚数 + 1
+    const fieldStages = fieldStack.length;
+    const requiredStages = lockedCount + 1;
+    
+    return fieldStages >= requiredStages;
+}
+
 function take() {
     if (turn !== "player") return;
-    if (field.length === 0) return alert("場がありません");
+    
+    if (!canTake()) {
+        const fieldStages = fieldStack.length;
+        const requiredStages = lockedCount + 1;
+        return alert(`倒すには場に${requiredStages}段以上の牌が必要です（現在：${fieldStages}段）`);
+    }
 
     hand = hand.concat(field);
 
@@ -284,6 +301,9 @@ function take() {
 
     renderHand();
     updateField();
+    
+    turn = "cpu";
+    setTimeout(cpuTurn, 500);
 }
 
 
@@ -363,6 +383,7 @@ function cpuTurn() {
 
     if (cpuHand.length === 0) {
         alert("CPUの勝ち！");
+        setTimeout(() => location.reload(), 1000);
         return;
     }
 
