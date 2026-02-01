@@ -309,19 +309,32 @@ function listenGameState() {
         renderHand();
         renderField();
         
-        // ゲーム終了判定（ゲーム開始後かつ手牌が配られている場合のみ）
-        if (data.status === "playing" && hand.length > 0) {
+        // ゲーム終了判定（ゲーム開始後かつ両方の手牌が配られている場合のみ）
+        if (data.status === "playing") {
             const players = data.players || {};
+            let opponentHand = null;
+            
+            // 相手の手牌を取得
             for (const pid in players) {
-                if (pid !== myId && (!players[pid].hand || players[pid].hand.length === 0)) {
-                    showResult(`相手が上がりました。あなたの敗北です。`);
-                    return;
+                if (pid !== myId) {
+                    opponentHand = players[pid].hand || [];
+                    break;
                 }
             }
             
-            if (hand.length === 0) {
-                showResult(`あなたが上がりました。勝利です！`);
-                return;
+            // 両方の手牌が配られている場合のみ勝利判定を実行
+            if (hand.length > 0 && opponentHand && opponentHand.length > 0) {
+                // 相手が上がった
+                if (opponentHand.length === 0) {
+                    showResult(`相手が上がりました。あなたの敗北です。`);
+                    return;
+                }
+                
+                // 自分が上がった
+                if (hand.length === 0) {
+                    showResult(`あなたが上がりました。勝利です！`);
+                    return;
+                }
             }
         }
 
