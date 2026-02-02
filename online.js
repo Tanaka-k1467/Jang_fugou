@@ -486,3 +486,26 @@ function generateRoomId() {
         chars[Math.floor(Math.random() * chars.length)]
     ).join("");
 }
+
+/* ============================================================
+   ページ離脱時の処理
+============================================================ */
+window.addEventListener('beforeunload', async () => {
+    if (roomId && myId) {
+        try {
+            await remove(ref(db, `rooms/${roomId}/players/${myId}`));
+        } catch (e) {
+            console.error('Failed to remove player on unload:', e);
+        }
+    }
+});
+
+window.addEventListener('unload', async () => {
+    if (roomId && myId) {
+        try {
+            await remove(ref(db, `rooms/${roomId}/players/${myId}`));
+        } catch (e) {
+            console.error('Failed to remove player on unload:', e);
+        }
+    }
+});
