@@ -345,10 +345,19 @@ function groupByValue(arr) {
 }
 
 function cpuTurn() {
+    console.log("=== cpuTurn開始 ===");
+    console.log("turn:", turn);
+    console.log("playerCount:", playerCount);
+    console.log("cpuHands:", cpuHands);
+    
     const cpuIndex = parseInt(turn.replace("cpu", ""));
     const cpuCards = cpuHands[cpuIndex];
     
+    console.log("cpuIndex:", cpuIndex);
+    console.log("cpuCards:", cpuCards);
+    
     if (!cpuCards || cpuCards.length === 0) {
+        console.log("CPUの手札がない、パス");
         nextTurn();
         return;
     }
