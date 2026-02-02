@@ -162,8 +162,14 @@ function canPlay(cards) {
     const nonRedCards = cards.filter(c => c !== 99);
     const redCount = cards.length - nonRedCards.length;
     
-    // 赤牌のみの場合は出せない
-    if (nonRedCards.length === 0) return false;
+    // 赤牌のみの場合
+    if (nonRedCards.length === 0) {
+        // 赤牌のみは常に出せる（99として扱う）
+        if (field.length === 0) return true;
+        if (cards.length !== field.length) return false;
+        // 赤牌は常に最強なので、99として比較
+        return isStronger(99, field[0]);
+    }
     
     // 赤牌以外の牌が全て同じ値か確認
     if (new Set(nonRedCards).size !== 1) return false;
