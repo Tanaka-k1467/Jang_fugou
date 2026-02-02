@@ -136,9 +136,6 @@ function scrollToPlay() {
     playSection.scrollIntoView({ behavior: "smooth" });
 }
 
-
-}
-
 function isStrengthReversed() {
     return nanmenActive ^ isReversed;
 }
