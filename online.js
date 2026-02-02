@@ -173,11 +173,12 @@ function checkRevolution(cards) {
 }
 
 function checkNanmen(cards) {
-    return cards.includes("南");
+    // 南（11）が含まれているか判定
+    return cards.some(c => c === 11);
 }
 
 function checkEightCut(cards) {
-    return cards.includes("8");
+    return cards.includes(8);
 }
 
 /* ============================================================
