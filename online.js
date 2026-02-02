@@ -536,20 +536,22 @@ window.addEventListener('unload', async () => {
    ターン情報更新
 ============================================================ */
 function updateTurnDisplay() {
-    const players = {};
-    // プレイヤー情報を取得
-    onValue(ref(db, `rooms/${roomId}/players`), snap => {
+    const turnDisplay = document.getElementById("turnDisplay");
+    if (!turnDisplay) return;
+    
+    get(ref(db, `rooms/${roomId}/players`)).then(snap => {
         const data = snap.val();
         if (!data) return;
         
+        const players = {};
         for (const pid in data) {
             players[pid] = data[pid].name || "名無し";
         }
         
         const currentPlayerName = players[turn] || "ー";
-        const nextPlayerName = turn === myId ? (players[Object.keys(players).find(p => p !== myId)] || "ー") : (players[myId] || "ー");
+        const otherPlayerId = Object.keys(players).find(p => p !== myId);
+        const nextPlayerName = turn === myId ? (players[otherPlayerId] || "ー") : (players[myId] || "ー");
         
-        document.getElementById("turnDisplay").textContent = 
-            `現在のターン：${currentPlayerName}\n次：${nextPlayerName}`;
-    });
+        turnDisplay.textContent = `現在のターン：${currentPlayerName}\n次：${nextPlayerName}`;
+    }).catch(e => console.error("Turn display error:", e));
 }
