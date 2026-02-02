@@ -520,7 +520,7 @@ function generateRoomId() {
    ページ離脱時の処理
 ============================================================ */
 // タブを閉じた時だけプレイヤーを削除
-window.addEventListener('unload', async () => {
+async function removePlayerOnExit() {
     // もう一度遊ぶの場合はプレイヤーを削除しない
     if (isRestarting) return;
     
@@ -528,10 +528,14 @@ window.addEventListener('unload', async () => {
         try {
             await remove(ref(db, `rooms/${roomId}/players/${myId}`));
         } catch (e) {
-            console.error('Failed to remove player on unload:', e);
+            console.error('Failed to remove player on exit:', e);
         }
     }
-});
+}
+
+window.addEventListener('beforeunload', removePlayerOnExit);
+window.addEventListener('unload', removePlayerOnExit);
+window.addEventListener('pagehide', removePlayerOnExit);
 /* ============================================================
    ターン情報更新
 ============================================================ */
