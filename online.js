@@ -252,7 +252,14 @@ async function moveTurn(forceTo = null) {
     const order = Object.values(data.turnOrder);
     const current = data.turn;
 
-    let next = forceTo ?? order.find(pid => pid !== current);
+    let next;
+    if (forceTo) {
+        next = forceTo;
+    } else {
+        const currentIndex = order.indexOf(current);
+        const nextIndex = (currentIndex + 1) % order.length;
+        next = order[nextIndex];
+    }
 
     await update(ref(db, `rooms/${roomId}`), {
         turn: next
