@@ -489,13 +489,18 @@ document.getElementById("startGameBtn").onclick = async () => {
         playerUpdates[`players/${playerId}/hand`] = playerHand;
     }
 
-    // 一度に全て更新
+    // ルーム情報を更新（ゲーム開始）
     await update(ref(db, `rooms/${roomId}`), {
-        ...playerUpdates,
         status: "playing",
         turnOrder: turnOrder,
         turn: turnOrder[0]
     });
+
+    // 各プレイヤーの手牌を個別に更新
+    for (const playerId in playerUpdates) {
+        const handPath = `rooms/${roomId}/players/${playerId}/hand`;
+        await update(ref(db, handPath), playerUpdates[playerId]);
+    }
     
     console.log("ゲーム開始");
 };
