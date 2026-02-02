@@ -414,6 +414,25 @@ function cpuTurn() {
     nextTurn();
 }
 
+/****************************************************
+ * ターン管理
+ ****************************************************/
+function nextTurn() {
+    if (turn === "player") {
+        turn = "cpu0";
+        cpuTurn();
+    } else {
+        // 次のCPUへ
+        const cpuIndex = parseInt(turn.replace("cpu", ""));
+        if (cpuIndex < playerCount - 2) {
+            turn = "cpu" + (cpuIndex + 1);
+            cpuTurn();
+        } else {
+            turn = "player";
+        }
+    }
+}
+
 
 /****************************************************
  * 場履歴ポップアップ
