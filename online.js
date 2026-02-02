@@ -56,18 +56,12 @@ playSection.style.display = "none";
 ============================================================ */
 function createDeck() {
     const d = [];
-    // 数字牌（1-9）を各4枚 = 36枚
     for (let i = 1; i <= 9; i++)
         for (let j = 0; j < 4; j++) d.push(i);
-    // 風牌（10-13）を各4枚 = 16枚
     for (let i = 10; i <= 13; i++)
         for (let j = 0; j < 4; j++) d.push(i);
-    // 赤牌（99）を2枚 = 2枚
-    // 合計: 36 + 16 + 2 = 54枚
-    // 108枚にするため、全て2倍にする
     d.push(99, 99);
-    // デッキを2倍にして108枚にする
-    return [...d, ...d];
+    return d;
 }
 
 function shuffle(a) {
@@ -482,7 +476,7 @@ document.getElementById("startGameBtn").onclick = async () => {
 
     // 手牌を配布
     const deck = shuffle(createDeck());
-    const cardsPerPlayer = Math.floor(108 / turnOrder.length);
+    const cardsPerPlayer = Math.floor(deck.length / turnOrder.length);
     
     const playerUpdates = {};
     for (let i = 0; i < turnOrder.length; i++) {

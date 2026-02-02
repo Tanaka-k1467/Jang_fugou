@@ -62,21 +62,18 @@ function isStronger(a, b) {
 function createDeck() {
     const d = [];
 
-    // 数牌 1〜9 各4 = 36枚
+    // 数牌 1〜9 各4
     for (let i = 1; i <= 9; i++)
         for (let j = 0; j < 4; j++) d.push(i);
 
-    // 東南西北 各4 = 16枚
+    // 東南西北 各4
     for (let i = 10; i <= 13; i++)
         for (let j = 0; j < 4; j++) d.push(i);
 
-    // 赤牌2枚 = 2枚
-    // 合計: 36 + 16 + 2 = 54枚
-    // 108枚にするため、全て2倍にする
+    // 赤牌2枚
     d.push(99, 99);
 
-    // デッキを2倍にして108枚にする
-    return [...d, ...d];
+    return d;
 }
 
 function shuffle(a) {
