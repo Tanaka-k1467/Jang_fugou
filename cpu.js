@@ -19,15 +19,19 @@ let playerCount = 2;  // プレイヤー数（2, 3, 4）
 let turn = "player";
 let lockedCount = 0;
 let lastPlayer = null;  // 直近で牌を出したプレイヤー（"player" or "cpu0", "cpu1", "cpu2"）
+let cpuHand = [];  // 後方互換性用
 
 // 状態フラグ
 let isReversed = false;   // 革命（永続）
 let nanmenActive = false; // 南面（場が残っている間だけ）
 
 // 後方互換性のため
-get cpuHand() {
+function getCpuHand() {
     return cpuHands[0] || [];
 }
+Object.defineProperty(window, 'cpuHand', {
+    get: getCpuHand
+});
 
 
 /****************************************************
