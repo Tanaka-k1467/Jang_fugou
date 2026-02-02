@@ -490,16 +490,7 @@ function generateRoomId() {
 /* ============================================================
    ページ離脱時の処理
 ============================================================ */
-window.addEventListener('beforeunload', async () => {
-    if (roomId && myId) {
-        try {
-            await remove(ref(db, `rooms/${roomId}/players/${myId}`));
-        } catch (e) {
-            console.error('Failed to remove player on unload:', e);
-        }
-    }
-});
-
+// タブを閉じた時だけプレイヤーを削除
 window.addEventListener('unload', async () => {
     if (roomId && myId) {
         try {
