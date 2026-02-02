@@ -249,7 +249,7 @@ async function moveTurn(forceTo = null) {
     const snap = await get(ref(db, `rooms/${roomId}`));
     const data = snap.val();
 
-    const order = Object.values(data.turnOrder);
+    const order = Array.isArray(data.turnOrder) ? data.turnOrder : Object.values(data.turnOrder);
     const current = data.turn;
 
     let next;
@@ -485,11 +485,8 @@ document.getElementById("startGameBtn").onclick = async () => {
         deckIndex = end;
     }
 
-    // ターン順序を作成
-    const turnOrder = {};
-    for (let i = 0; i < shuffled.length; i++) {
-        turnOrder[i] = shuffled[i];
-    }
+    // ターン順序を作成（配列形式で保存）
+    const turnOrder = shuffled;
 
     await update(ref(db, `rooms/${roomId}`), {
         status: "playing",
