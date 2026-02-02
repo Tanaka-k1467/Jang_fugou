@@ -25,13 +25,7 @@ let cpuHand = [];  // 後方互換性用
 let isReversed = false;   // 革命（永続）
 let nanmenActive = false; // 南面（場が残っている間だけ）
 
-// 後方互換性のため
-function getCpuHand() {
-    return cpuHands[0] || [];
-}
-Object.defineProperty(window, 'cpuHand', {
-    get: getCpuHand
-});
+// 後方互換性のため - 粗い粗い、粗い。cpuHandを使う代わりにcpuHands[0]を使う
 
 
 /****************************************************
