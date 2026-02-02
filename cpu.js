@@ -345,11 +345,11 @@ function groupByValue(arr) {
 }
 
 function cpuTurn() {
-    // 2人対戦用にシンプル化
-    const cpuCards = cpuHands[0];
+    const cpuIndex = parseInt(turn.replace("cpu", ""));
+    const cpuCards = cpuHands[cpuIndex];
     
     if (!cpuCards || cpuCards.length === 0) {
-        turn = "player";
+        nextTurn();
         return;
     }
     
@@ -375,7 +375,7 @@ function cpuTurn() {
         fieldStack = [];
         nanmenActive = false;
         updateField();
-        turn = "player";
+        nextTurn();
         return;
     }
     
@@ -385,7 +385,7 @@ function cpuTurn() {
     
     field = playSet;
     lockedCount = playSet.length;
-    lastPlayer = "cpu";
+    lastPlayer = turn;
     fieldStack.push(playSet.slice());
     playSet.forEach(v => cpuCards.splice(cpuCards.indexOf(v), 1));
     updateCpuCount();
@@ -395,7 +395,7 @@ function cpuTurn() {
     if (rev) isReversed = !isReversed;
     
     if (eightCut) {
-        alert("CPUの8切り！ 場が流れます");
+        alert(turn + "の8切り！ 場が流れます");
         field = [];
         lockedCount = 0;
         fieldStack = [];
@@ -406,12 +406,12 @@ function cpuTurn() {
     }
     
     if (cpuCards.length === 0) {
-        alert("CPUの勝ち！");
+        alert(turn + "の勝ち！");
         setTimeout(() => location.reload(), 1000);
         return;
     }
     
-    turn = "player";
+    nextTurn();
 }
 
 /****************************************************
