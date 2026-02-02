@@ -500,6 +500,7 @@ document.getElementById("closeRoomBtn").onclick = async () => {
 document.getElementById("restartBtn").onclick = () => {
     isRestarting = true;
     location.reload();
+};
 
 document.getElementById("backHomeBtn").onclick = () => {
     location.href = "index.html";
