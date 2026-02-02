@@ -499,7 +499,7 @@ document.getElementById("startGameBtn").onclick = async () => {
     // 各プレイヤーの手牌を個別に更新
     for (const playerId in playerUpdates) {
         const handPath = `rooms/${roomId}/players/${playerId}/hand`;
-        await update(ref(db, handPath), playerUpdates[playerId]);
+        await set(ref(db, handPath), playerUpdates[playerId]);
     }
     
     console.log("ゲーム開始");
