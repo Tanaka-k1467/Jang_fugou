@@ -141,9 +141,11 @@ function isStrengthReversed() {
 }
 
 function isStronger(a, b) {
-    if (a === "赤" && b !== "赤") return true;
-    if (b === "赤" && a !== "赤") return false;
-
+    // 赤牌（99）は常に最強
+    if (a === 99) return true;
+    if (b === 99) return false;
+    
+    // 赤牌以外で比較
     const sa = strengthBase(a);
     const sb = strengthBase(b);
 
@@ -155,10 +157,25 @@ function canPlay(cards) {
     if (turn !== myId) return false;
     
     if (cards.length === 0) return false;
-    if (new Set(cards).size !== 1) return false;
+    
+    // 赤牌を含む場合の処理
+    const nonRedCards = cards.filter(c => c !== 99);
+    const redCount = cards.length - nonRedCards.length;
+    
+    // 赤牌のみの場合は出せない
+    if (nonRedCards.length === 0) return false;
+    
+    // 赤牌以外の牌が全て同じ値か確認
+    if (new Set(nonRedCards).size !== 1) return false;
+    
+    // 場が空の場合は出せる
     if (field.length === 0) return true;
+    
+    // 枚数が同じか確認
     if (cards.length !== field.length) return false;
-    return isStronger(cards[0], field[0]);
+    
+    // 強さ比較（赤牌を含む場合、赤牌以外の牌で比較）
+    return isStronger(nonRedCards[0], field[0]);
 }
 
 /* ============================================================
