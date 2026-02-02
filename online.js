@@ -457,22 +457,30 @@ document.getElementById("startGameBtn").onclick = async () => {
     const players = snap.val() || {};
     const ids = Object.keys(players);
 
-    if (ids.length !== 2) return alert("今は2人専用です");
+    if (ids.length < 2) return alert("ゲームを開始するには2人以上が必要です");
 
     // 手牌配布
     const deck = shuffle(createDeck());
-    const hand1 = deck.slice(0, 27).sort((a, b) => strengthBase(a) - strengthBase(b));
-    const hand2 = deck.slice(27).sort((a, b) => strengthBase(a) - strengthBase(b));
-
+    const cardsPerPlayer = Math.floor(108 / ids.length);
     const shuffled = [...ids].sort(() => Math.random() - 0.5);
 
     // プレイヤーに手牌を配布
-    await update(ref(db, `rooms/${roomId}/players/${shuffled[0]}`), { hand: hand1 });
-    await update(ref(db, `rooms/${roomId}/players/${shuffled[1]}`), { hand: hand2 });
+    for (let i = 0; i < shuffled.length; i++) {
+        const start = cardsPerPlayer * i;
+        const end = start + cardsPerPlayer;
+        const playerHand = deck.slice(start, end).sort((a, b) => strengthBase(a) - strengthBase(b));
+        await update(ref(db, `rooms/${roomId}/players/${shuffled[i]}`), { hand: playerHand });
+    }
+
+    // ターン順序を作成
+    const turnOrder = {};
+    for (let i = 0; i < shuffled.length; i++) {
+        turnOrder[i] = shuffled[i];
+    }
 
     await update(ref(db, `rooms/${roomId}`), {
         status: "playing",
-        turnOrder: { 0: shuffled[0], 1: shuffled[1] },
+        turnOrder: turnOrder,
         turn: shuffled[0]
     });
 };
