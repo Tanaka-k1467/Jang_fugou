@@ -9,19 +9,9 @@
 <body>
 
     <h1>雀富豪 - CPU対戦</h1>
-    <div style="font-size: 0.8em; color: #666; margin-bottom: 10px;">バージョン: v1.18.5 (複数CPU対応)</div>
+    <div style="font-size: 0.8em; color: #666; margin-bottom: 10px;">バージョン: v1.17 (ターン表示・ターン判定追加)</div>
     <button onclick="location.href='index.html'">← ホームに戻る</button>
 
-    <!-- プレイヤー数選択 -->
-    <div id="playerCountSection" class="area">
-        <h2>プレイヤー数を選択</h2>
-        <button onclick="startGame(2)">2人対戦（CPU1人）</button>
-        <button onclick="startGame(3)">3人対戦（CPU2人）</button>
-        <button onclick="startGame(4)">4人対戦（CPU3人）</button>
-    </div>
-
-    <!-- ゲーム画面 -->
-    <div id="gameSection" style="display: none;">
     <!-- あなたの手牌 -->
     <div class="area">
         <h2>あなたの手牌</h2>
@@ -43,7 +33,6 @@
         <button id="playBtn">出す</button>
         <button id="passBtn">パス</button>
         <button id="takeBtn">倒す</button>
-    </div>
     </div>
 
     <!-- CPU戦ロジック -->

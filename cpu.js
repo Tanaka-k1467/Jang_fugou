@@ -10,22 +10,18 @@
 
 let deck = [];
 let hand = [];
-let cpuHands = [];  // 複数CPU対応
+let cpuHand = [];
 let field = [];
 let selected = [];
 let fieldStack = [];
 
-let playerCount = 2;  // プレイヤー数（2, 3, 4）
 let turn = "player";
 let lockedCount = 0;
-let lastPlayer = null;  // 直近で牌を出したプレイヤー（"player" or "cpu0", "cpu1", "cpu2"）
-let cpuHand = [];  // 後方互換性用
+let lastPlayer = null;  // 直近で牌を出したプレイヤー（"player" or "cpu"）
 
 // 状態フラグ
 let isReversed = false;   // 革命（永続）
 let nanmenActive = false; // 南面（場が残っている間だけ）
-
-// 後方互換性のため - 粗い粗い、粗い。cpuHandを使う代わりにcpuHands[0]を使う
 
 
 /****************************************************
@@ -95,20 +91,12 @@ function shuffle(a) {
 function deal() {
     deck = shuffle(createDeck());
 
-    // プレイヤー数に応じて配牌
-    const cardsPerPlayer = Math.floor(deck.length / playerCount);
-    hand = deck.slice(0, cardsPerPlayer);
-    
-    cpuHands = [];
-    for (let i = 0; i < playerCount - 1; i++) {
-        const start = cardsPerPlayer * (i + 1);
-        const end = start + cardsPerPlayer;
-        cpuHands.push(deck.slice(start, end));
-    }
+    hand = deck.slice(0, 27);
+    cpuHand = deck.slice(27);
 
     // 配牌時だけソート
     hand.sort((a, b) => strengthBase(a) - strengthBase(b));
-    cpuHands.forEach(h => h.sort((a, b) => strengthBase(a) - strengthBase(b)));
+    cpuHand.sort((a, b) => strengthBase(a) - strengthBase(b));
 
     renderHand();
     updateCpuCount();
@@ -156,11 +144,8 @@ function updateField() {
 }
 
 function updateCpuCount() {
-    let text = "";
-    for (let i = 0; i < cpuHands.length; i++) {
-        text += `CPU${i+1}の手札: ${cpuHands[i].length}牌\n`;
-    }
-    document.getElementById("cpuCount").textContent = text;
+    document.getElementById("cpuCount").textContent =
+        `CPUの手札: ${cpuHand.length}牌`;
 }
 
 
@@ -345,21 +330,23 @@ function groupByValue(arr) {
 }
 
 function cpuTurn() {
-    const cpuIndex = parseInt(turn.replace("cpu", ""));
-    const cpuCards = cpuHands[cpuIndex];
-    
-    if (!cpuCards || cpuCards.length === 0) {
-        nextTurn();
-        return;
-    }
-    
-    let groups = groupByValue(cpuCards);
+    console.log("=== cpuTurn開始 ===");
+    console.log("turn:", turn);
+    console.log("field.length:", field.length);
+    console.log("cpuHand:", cpuHand);
+
+    let groups = groupByValue(cpuHand);
+
+    // ★重要：弱い→強い順に正しくソート
     groups.sort((a, b) => strengthBase(a[0]) - strengthBase(b[0]));
+
     let playSet = null;
-    
+
     if (field.length === 0) {
+        // 場がクリアされている場合、最も弱い牌を出す
         playSet = groups[0];
     } else {
+        // 場に牌がある場合、同じ枚数で強い牌を探す
         const need = field.length;
         for (const g of groups) {
             if (g.length === need && isStronger(g[0], field[0])) {
@@ -368,69 +355,59 @@ function cpuTurn() {
             }
         }
     }
-    
+
     if (!playSet) {
+        console.log("CPUがパス");
         field = [];
         lockedCount = 0;
         fieldStack = [];
         nanmenActive = false;
+
         updateField();
-        nextTurn();
+        turn = "player";
         return;
     }
-    
+
     const rev = checkRevolution(playSet);
     const nan = checkNanmen(playSet);
     const eightCut = checkEightCut(playSet);
-    
+
+    console.log("CPUが牌を出す:", playSet);
     field = playSet;
     lockedCount = playSet.length;
-    lastPlayer = turn;
+    lastPlayer = "cpu";  // CPUが牌を出した
+
     fieldStack.push(playSet.slice());
-    playSet.forEach(v => cpuCards.splice(cpuCards.indexOf(v), 1));
+
+    playSet.forEach(v => cpuHand.splice(cpuHand.indexOf(v), 1));
+
     updateCpuCount();
     updateField();
-    
+
     if (nan) nanmenActive = true;
     if (rev) isReversed = !isReversed;
-    
+
     if (eightCut) {
-        alert(turn + "の8切り！ 場が流れます");
+        alert("CPUの8切り！ 場が流れます");
         field = [];
         lockedCount = 0;
         fieldStack = [];
         nanmenActive = false;
+
         updateField();
         setTimeout(cpuTurn, 500);
-        return;
+        return; // ★ターンは続行
     }
-    
-    if (cpuCards.length === 0) {
-        alert(turn + "の勝ち！");
+
+    if (cpuHand.length === 0) {
+        alert("CPUの勝ち！");
         setTimeout(() => location.reload(), 1000);
         return;
     }
-    
-    nextTurn();
-}
 
-/****************************************************
- * ターン管理
- ****************************************************/
-function nextTurn() {
-    if (turn === "player") {
-        turn = "cpu0";
-        cpuTurn();
-    } else {
-        // 次のCPUへ
-        const cpuIndex = parseInt(turn.replace("cpu", ""));
-        if (cpuIndex < playerCount - 2) {
-            turn = "cpu" + (cpuIndex + 1);
-            cpuTurn();
-        } else {
-            turn = "player";
-        }
-    }
+    // CPUが牌を出した後、プレイヤーのターンに戻す
+    // ただし、プレイヤーが「倒す」をできるようにする
+    turn = "player";
 }
 
 
@@ -467,20 +444,3 @@ window.onload = () => {
     document.getElementById("passBtn").onclick = pass;
     document.getElementById("takeBtn").onclick = take;
 };
-/****************************************************
- * ゲーム開始
- ****************************************************/
-function startGame(count) {
-    playerCount = count;
-    document.getElementById("playerCountSection").style.display = "none";
-    document.getElementById("gameSection").style.display = "block";
-    
-    // 複数CPUの手札を初期化
-    cpuHands = [];
-    for (let i = 0; i < playerCount - 1; i++) {
-        cpuHands.push([]);
-    }
-    
-    deal();
-}
-
