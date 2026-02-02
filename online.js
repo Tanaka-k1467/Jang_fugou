@@ -323,24 +323,28 @@ function listenGameState() {
         renderField();
         updateTurnDisplay();
         
-        // ゲーム終了判定（ゲーム開始後かつ両方の手牌が配られている場合のみ）
+        // ゲーム終了判定（ゲーム開始後かつ全プレイヤーの手牌が配られている場合のみ）
         if (data.status === "playing") {
             const players = data.players || {};
-            let opponentHand = null;
+            let allPlayersHaveCards = true;
+            let winnerName = null;
             
-            // 相手の手牌を取得
+            // 全プレイヤーの手牌を確認
             for (const pid in players) {
-                if (pid !== myId) {
-                    opponentHand = players[pid].hand || [];
-                    break;
+                const playerHand = players[pid].hand || [];
+                if (playerHand.length === 0 && pid !== myId) {
+                    winnerName = players[pid].name || "名無し";
+                }
+                if (playerHand.length === 0) {
+                    allPlayersHaveCards = false;
                 }
             }
             
-            // 両方の手牌が配られている場合のみ勝利判定を実行
-            if (hand.length > 0 && opponentHand && opponentHand.length > 0) {
-                // 相手が上がった
-                if (opponentHand.length === 0) {
-                    showResult(`相手が上がりました。あなたの敗北です。`);
+            // 全プレイヤーの手牌が配られている場合のみ勝利判定を実行
+            if (allPlayersHaveCards && hand.length > 0) {
+                // 他のプレイヤーが上がった
+                if (winnerName) {
+                    showResult(`${winnerName}が上がりました。あなたの敗北です。`);
                     return;
                 }
                 
@@ -465,11 +469,13 @@ document.getElementById("startGameBtn").onclick = async () => {
     const shuffled = [...ids].sort(() => Math.random() - 0.5);
 
     // プレイヤーに手牌を配布
+    let deckIndex = 0;
     for (let i = 0; i < shuffled.length; i++) {
-        const start = cardsPerPlayer * i;
-        const end = start + cardsPerPlayer;
+        const start = deckIndex;
+        const end = (i === shuffled.length - 1) ? deck.length : start + cardsPerPlayer;
         const playerHand = deck.slice(start, end).sort((a, b) => strengthBase(a) - strengthBase(b));
         await update(ref(db, `rooms/${roomId}/players/${shuffled[i]}`), { hand: playerHand });
+        deckIndex = end;
     }
 
     // ターン順序を作成
