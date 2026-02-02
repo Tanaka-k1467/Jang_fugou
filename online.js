@@ -151,6 +151,9 @@ function isStronger(a, b) {
 }
 
 function canPlay(cards) {
+    // ターン判定
+    if (turn !== myId) return false;
+    
     if (cards.length === 0) return false;
     if (new Set(cards).size !== 1) return false;
     if (field.length === 0) return true;
@@ -294,6 +297,7 @@ function listenGameState() {
 
         renderHand();
         renderField();
+        updateTurnDisplay();
         
         // ゲーム終了判定（ゲーム開始後かつ両方の手牌が配られている場合のみ）
         if (data.status === "playing") {
@@ -503,3 +507,24 @@ window.addEventListener('unload', async () => {
         }
     }
 });
+/* ============================================================
+   ターン情報更新
+============================================================ */
+function updateTurnDisplay() {
+    const players = {};
+    // プレイヤー情報を取得
+    onValue(ref(db, `rooms/${roomId}/players`), snap => {
+        const data = snap.val();
+        if (!data) return;
+        
+        for (const pid in data) {
+            players[pid] = data[pid].name || "名無し";
+        }
+        
+        const currentPlayerName = players[turn] || "ー";
+        const nextPlayerName = turn === myId ? (players[Object.keys(players).find(p => p !== myId)] || "ー") : (players[myId] || "ー");
+        
+        document.getElementById("turnDisplay").textContent = 
+            `現在のターン：${currentPlayerName}\n次：${nextPlayerName}`;
+    });
+}
