@@ -189,7 +189,8 @@ function checkRevolution(cards) {
 }
 
 function checkNanmen(cards) {
-    return cards[0] === 11;
+    // 南（11）が含まれているか判定
+    return cards.some(c => c === 11);
 }
 
 function checkEightCut(cards) {
