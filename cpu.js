@@ -345,23 +345,21 @@ function groupByValue(arr) {
 }
 
 function cpuTurn() {
-    console.log("=== cpuTurn開始 ===");
-    console.log("turn:", turn);
-    console.log("field.length:", field.length);
-    console.log("cpuHand:", cpuHand);
-
-    let groups = groupByValue(cpuHand);
-
-    // ★重要：弱い→強い順に正しくソート
+    const cpuIndex = parseInt(turn.replace("cpu", ""));
+    const cpuCards = cpuHands[cpuIndex];
+    
+    if (!cpuCards || cpuCards.length === 0) {
+        nextTurn();
+        return;
+    }
+    
+    let groups = groupByValue(cpuCards);
     groups.sort((a, b) => strengthBase(a[0]) - strengthBase(b[0]));
-
     let playSet = null;
-
+    
     if (field.length === 0) {
-        // 場がクリアされている場合、最も弱い牌を出す
         playSet = groups[0];
     } else {
-        // 場に牌がある場合、同じ枚数で強い牌を探す
         const need = field.length;
         for (const g of groups) {
             if (g.length === need && isStronger(g[0], field[0])) {
@@ -370,59 +368,50 @@ function cpuTurn() {
             }
         }
     }
-
+    
     if (!playSet) {
-        console.log("CPUがパス");
         field = [];
         lockedCount = 0;
         fieldStack = [];
         nanmenActive = false;
-
         updateField();
-        turn = "player";
+        nextTurn();
         return;
     }
-
+    
     const rev = checkRevolution(playSet);
     const nan = checkNanmen(playSet);
     const eightCut = checkEightCut(playSet);
-
-    console.log("CPUが牌を出す:", playSet);
+    
     field = playSet;
     lockedCount = playSet.length;
-    lastPlayer = "cpu";  // CPUが牌を出した
-
+    lastPlayer = turn;
     fieldStack.push(playSet.slice());
-
-    playSet.forEach(v => cpuHand.splice(cpuHand.indexOf(v), 1));
-
+    playSet.forEach(v => cpuCards.splice(cpuCards.indexOf(v), 1));
     updateCpuCount();
     updateField();
-
+    
     if (nan) nanmenActive = true;
     if (rev) isReversed = !isReversed;
-
+    
     if (eightCut) {
-        alert("CPUの8切り！ 場が流れます");
+        alert(turn + "の8切り！ 場が流れます");
         field = [];
         lockedCount = 0;
         fieldStack = [];
         nanmenActive = false;
-
         updateField();
         setTimeout(cpuTurn, 500);
-        return; // ★ターンは続行
+        return;
     }
-
-    if (cpuHand.length === 0) {
-        alert("CPUの勝ち！");
+    
+    if (cpuCards.length === 0) {
+        alert(turn + "の勝ち！");
         setTimeout(() => location.reload(), 1000);
         return;
     }
-
-    // CPUが牌を出した後、プレイヤーのターンに戻す
-    // ただし、プレイヤーが「倒す」をできるようにする
-    turn = "player";
+    
+    nextTurn();
 }
 
 
