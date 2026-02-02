@@ -534,7 +534,6 @@ async function removePlayerOnExit() {
 }
 
 window.addEventListener('beforeunload', removePlayerOnExit);
-window.addEventListener('unload', removePlayerOnExit);
 window.addEventListener('pagehide', removePlayerOnExit);
 /* ============================================================
    ターン情報更新
