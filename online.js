@@ -559,3 +559,13 @@ function updateTurnDisplay() {
         turnDisplay.textContent = `現在のターン：${currentPlayerName}\n次：${nextPlayerName}`;
     }).catch(e => console.error("Turn display error:", e));
 }
+/****************************************************
+ * 次のプレイヤーのターンに進む
+ ****************************************************/
+function getNextPlayer(players, currentPlayerId) {
+    const ids = Object.keys(players).sort();
+    const currentIndex = ids.indexOf(currentPlayerId);
+    const nextIndex = (currentIndex + 1) % ids.length;
+    return ids[nextIndex];
+}
+
