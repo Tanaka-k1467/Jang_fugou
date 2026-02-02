@@ -10,18 +10,24 @@
 
 let deck = [];
 let hand = [];
-let cpuHand = [];
+let cpuHands = [];  // 複数CPU対応
 let field = [];
 let selected = [];
 let fieldStack = [];
 
+let playerCount = 2;  // プレイヤー数（2, 3, 4）
 let turn = "player";
 let lockedCount = 0;
-let lastPlayer = null;  // 直近で牌を出したプレイヤー（"player" or "cpu"）
+let lastPlayer = null;  // 直近で牌を出したプレイヤー（"player" or "cpu0", "cpu1", "cpu2"）
 
 // 状態フラグ
 let isReversed = false;   // 革命（永続）
 let nanmenActive = false; // 南面（場が残っている間だけ）
+
+// 後方互換性のため
+get cpuHand() {
+    return cpuHands[0] || [];
+}
 
 
 /****************************************************
@@ -91,12 +97,20 @@ function shuffle(a) {
 function deal() {
     deck = shuffle(createDeck());
 
-    hand = deck.slice(0, 27);
-    cpuHand = deck.slice(27);
+    // プレイヤー数に応じて配牌
+    const cardsPerPlayer = Math.floor(deck.length / playerCount);
+    hand = deck.slice(0, cardsPerPlayer);
+    
+    cpuHands = [];
+    for (let i = 0; i < playerCount - 1; i++) {
+        const start = cardsPerPlayer * (i + 1);
+        const end = start + cardsPerPlayer;
+        cpuHands.push(deck.slice(start, end));
+    }
 
     // 配牌時だけソート
     hand.sort((a, b) => strengthBase(a) - strengthBase(b));
-    cpuHand.sort((a, b) => strengthBase(a) - strengthBase(b));
+    cpuHands.forEach(h => h.sort((a, b) => strengthBase(a) - strengthBase(b)));
 
     renderHand();
     updateCpuCount();
@@ -144,8 +158,11 @@ function updateField() {
 }
 
 function updateCpuCount() {
-    document.getElementById("cpuCount").textContent =
-        `CPUの手札: ${cpuHand.length}牌`;
+    let text = "";
+    for (let i = 0; i < cpuHands.length; i++) {
+        text += `CPU${i+1}の手札: ${cpuHands[i].length}牌\n`;
+    }
+    document.getElementById("cpuCount").textContent = text;
 }
 
 
@@ -444,3 +461,20 @@ window.onload = () => {
     document.getElementById("passBtn").onclick = pass;
     document.getElementById("takeBtn").onclick = take;
 };
+/****************************************************
+ * ゲーム開始
+ ****************************************************/
+function startGame(count) {
+    playerCount = count;
+    document.getElementById("playerCountSection").style.display = "none";
+    document.getElementById("gameSection").style.display = "block";
+    
+    // 複数CPUの手札を初期化
+    cpuHands = [];
+    for (let i = 0; i < playerCount - 1; i++) {
+        cpuHands.push([]);
+    }
+    
+    deal();
+}
+
