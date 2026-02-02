@@ -136,18 +136,7 @@ function scrollToPlay() {
     playSection.scrollIntoView({ behavior: "smooth" });
 }
 
-/* ============================================================
-   強さ判定
-============================================================ */
-function strengthBase(v) {
-    if (v === "赤") return 999;
-    if (v === "2") return 13;
-    if (v === "1") return 12;
-    if (v === "北") return 11;
-    if (v === "西") return 10;
-    if (v === "南") return 9;
-    if (v === "東") return 8;
-    return Number(v) - 2;
+
 }
 
 function isStrengthReversed() {
