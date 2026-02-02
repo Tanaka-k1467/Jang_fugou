@@ -466,35 +466,38 @@ document.getElementById("startGameBtn").onclick = async () => {
 
     const snap = await get(ref(db, `rooms/${roomId}/players`));
     const players = snap.val() || {};
-    const ids = Object.keys(players);
+    const playerIds = Object.keys(players);
 
-    if (ids.length < 2) return alert("ゲームを開始するには2人以上が必要です");
+    if (playerIds.length < 2) return alert("ゲームを開始するには2人以上が必要です");
 
-    // 手牌配布
+    // ターン順序をシャッフル
+    const turnOrder = [...playerIds].sort(() => Math.random() - 0.5);
+    console.log("ターン順序:", turnOrder);
+
+    // 手牌を配布
     const deck = shuffle(createDeck());
-    const cardsPerPlayer = Math.floor(108 / ids.length);
-    const shuffled = [...ids].sort(() => Math.random() - 0.5);
-
-    // プレイヤーに手牌を配布
-    let deckIndex = 0;
-    for (let i = 0; i < shuffled.length; i++) {
-        const start = deckIndex;
-        const end = (i === shuffled.length - 1) ? deck.length : start + cardsPerPlayer;
+    const cardsPerPlayer = Math.floor(108 / turnOrder.length);
+    
+    const playerUpdates = {};
+    for (let i = 0; i < turnOrder.length; i++) {
+        const playerId = turnOrder[i];
+        const start = i * cardsPerPlayer;
+        const end = (i === turnOrder.length - 1) ? deck.length : (i + 1) * cardsPerPlayer;
         const playerHand = deck.slice(start, end).sort((a, b) => strengthBase(a) - strengthBase(b));
-        console.log(`配牌: プレイヤー${i} (ID: ${shuffled[i]}) に${playerHand.length}枚配布 (インデックス: ${start}-${end})`);
-        await update(ref(db, `rooms/${roomId}/players/${shuffled[i]}`), { hand: playerHand });
-        deckIndex = end;
+        
+        console.log(`プレイヤー${i} (${playerId}): ${playerHand.length}枚 (${start}-${end})`);
+        playerUpdates[`players/${playerId}/hand`] = playerHand;
     }
-    console.log(`配牌完了: 合計${deckIndex}枚配布`);
 
-    // ターン順序を作成（配列形式で保存）
-    const turnOrder = shuffled;
-
+    // 一度に全て更新
     await update(ref(db, `rooms/${roomId}`), {
+        ...playerUpdates,
         status: "playing",
         turnOrder: turnOrder,
-        turn: shuffled[0]
+        turn: turnOrder[0]
     });
+    
+    console.log("ゲーム開始");
 };
 
 document.getElementById("playBtn").onclick = () => {
