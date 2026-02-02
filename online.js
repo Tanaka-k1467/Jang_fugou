@@ -470,8 +470,8 @@ document.getElementById("closeRoomBtn").onclick = async () => {
 };
 
 document.getElementById("restartBtn").onclick = () => {
+    isRestarting = true;
     location.reload();
-};
 
 document.getElementById("backHomeBtn").onclick = () => {
     location.href = "index.html";
@@ -492,6 +492,9 @@ function generateRoomId() {
 ============================================================ */
 // タブを閉じた時だけプレイヤーを削除
 window.addEventListener('unload', async () => {
+    // もう一度遊ぶの場合はプレイヤーを削除しない
+    if (isRestarting) return;
+    
     if (roomId && myId) {
         try {
             await remove(ref(db, `rooms/${roomId}/players/${myId}`));
