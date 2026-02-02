@@ -481,9 +481,11 @@ document.getElementById("startGameBtn").onclick = async () => {
         const start = deckIndex;
         const end = (i === shuffled.length - 1) ? deck.length : start + cardsPerPlayer;
         const playerHand = deck.slice(start, end).sort((a, b) => strengthBase(a) - strengthBase(b));
+        console.log(`配牌: プレイヤー${i} (ID: ${shuffled[i]}) に${playerHand.length}枚配布 (インデックス: ${start}-${end})`);
         await update(ref(db, `rooms/${roomId}/players/${shuffled[i]}`), { hand: playerHand });
         deckIndex = end;
     }
+    console.log(`配牌完了: 合計${deckIndex}枚配布`);
 
     // ターン順序を作成（配列形式で保存）
     const turnOrder = shuffled;
